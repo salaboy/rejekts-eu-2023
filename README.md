@@ -259,3 +259,10 @@ You can use your favouriate language and use the Dapr SDKs, or you can do plain 
 
 This gives you the ultimate freedom, as your apps doesn't need to know where the Redis Instance is, or even if it is a Redis instance.. as no Redis dependency is needed in your app. :metal: :tada:
 
+# Links
+
+- Salman:
+  - [Subscribe on Youtube](https://www.youtube.com/c/soulmaniqbal)
+- Salaboy: 
+    - [salaboy.com](https://www.salaboy.com)
+    - [Drop me a comment on Twitter](https://twitter.com/salaboy)
