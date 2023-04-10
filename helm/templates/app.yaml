@@ -1,0 +1,25 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: rejekts-app
+spec:
+  template:
+    metadata:
+      annotations:  
+        dapr.io/app-id: rejekts-app
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true" 
+        dapr.io/metrics-port: "9092"
+    spec:
+      containerConcurrency: 0
+      containers:
+        - image: salaboy/rejekts-app-06f4977a8aea9323fca380508b0d8239
+          name: user-container
+          livenessProbe:
+            httpGet:
+              path: /health/readiness
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /health/liveness
+              port: 8080
