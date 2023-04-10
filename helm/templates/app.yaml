@@ -10,6 +10,9 @@ spec:
         dapr.io/app-port: "8080"
         dapr.io/enabled: "true" 
         dapr.io/metrics-port: "9092"
+{{ if .Values.inVcluster }}   
+        dapr.io/disable-builtin-k8s-secret-store: "true"     
+{{- end}}
     spec:
       containerConcurrency: 0
       containers:

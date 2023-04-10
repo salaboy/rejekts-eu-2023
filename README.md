@@ -184,6 +184,25 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install redis bitnami/redis --set architecture=standalone -n production
 ```
 
+Let's also install a Redis Instance in our default namespace for our development teams to use: 
+
+```
+helm install redis bitnami/redis --set architecture=standalone 
+```
+
+You can get the password by running the following command, you will need this in the next section: 
+
+```
+kubectl get secret --namespace default redis -o jsonpath="{.data.redis-password}" | base64 -d
+```
+
+Finally, configure the production environment by running: 
+
+```
+kubectl apply -f argocd/production-env.yaml -n argocd
+```
+
+
 
 ## Understand your teams
 
@@ -192,6 +211,8 @@ Once we have the main tools to build platforms we need to combine them in a way 
 In this section we will be creating two different Crossplane Compositions. One for our Development Teams to create Development Environments, and the other one for our Data Scientists and their exotic tools. 
 
 The [crossplane](crossplane/) directory contains one `CompositeResourceDefinition` and two `Composition`s that enable both our Developers and our Data Scientists to create environment for them to work. 
+
+**Note: Because from development environments we will be using the redis instance that we created before, you need to replace the Redis Instance password into the `crossplane/composition-devenv.yaml` file. Search for the string `redisPassword` This can be automated.
 
 Let's install these resources:
 

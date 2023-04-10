@@ -142,32 +142,7 @@ spec:
         - fromFieldPath: metadata.name
           toFieldPath: metadata.name
       readinessChecks:
-      - type: None
-    - name: redis-chart-vcluster
-      base:
-        apiVersion: helm.crossplane.io/v1beta1
-        kind: Release
-        metadata:
-          annotations: 
-            crossplane.io/external-name: redis
-        spec:
-          forProvider:
-            chart:
-              name: redis
-              repository: https://charts.bitnami.com/bitnami
-              version: "17.9.3"
-            values:
-              architecture: "standalone"
-            namespace: default
-          providerConfigRef: 
-            name: #patched
-      patches:
-        - fromFieldPath: metadata.name
-          toFieldPath: spec.providerConfigRef.name
-      readinessChecks:
-      - type: MatchString
-        fieldPath: status.atProvider.state
-        matchString: deployed    
+      - type: None 
     - name: rejekts-app-chart-vcluster
       base:
         apiVersion: helm.crossplane.io/v1beta1
@@ -180,9 +155,11 @@ spec:
             chart:
               name: rejekts-app
               repository: https://salaboy.github.io/helm/
-              version: "v0.1.0"
+              version: "v0.2.0"
             values:
-              
+              inVcluster: true
+              redisHost: redis-master.default.svc.cluster.local
+              redisPassword: CiPV2SU9ZS #get from Redis install: kubectl get secret --namespace default redis -o jsonpath="{.data.redis-password}" | base64 -d
             namespace: default
           providerConfigRef: 
             name: #patched

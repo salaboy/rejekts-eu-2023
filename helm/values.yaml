@@ -1,0 +1,2 @@
+inVcluster: false
+redisHost: "redis-master"

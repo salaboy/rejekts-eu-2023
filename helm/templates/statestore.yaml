@@ -14,10 +14,18 @@ spec:
   # Redis password with your own Secret's name. For more information,
   # see https://docs.dapr.io/operations/components/component-secrets .
   - name: redisHost
-    value: redis-master:6379
+    value: {{ .Values.redisHost }}:6379
+{{ if .Values.inVcluster }}
+  - name: redisPassword
+    value: {{ .Values.redisPassword }}
+{{ else }}    
   - name: redisPassword
     secretKeyRef:
       name: redis
       key: redis-password
+{{ end }}      
+{{ if .Values.inVcluster }}
+{{ else }}
 auth:
   secretStore: kubernetes
+{{ end }}
