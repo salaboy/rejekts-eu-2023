@@ -68,7 +68,7 @@ spec:
                     - apiVersion: serving.knative.dev/v1
                       kind: Revision
                     - apiVersion: serving.knative.dev/v1
-                      kind: Route  
+                      kind: Route 
               syncer:
                 extraArgs: [] # patched
               #     - --out-kube-config-server=https://cluster-1.cluster-1.svc
@@ -174,7 +174,7 @@ spec:
         kind: Release
         metadata:
           annotations: 
-            crossplane.io/external-name: ray
+            crossplane.io/external-name: ray-cluster
         spec:
           forProvider:
             chart:
