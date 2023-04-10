@@ -6,12 +6,11 @@ On this short tutorial we will be looking at three main aspects of creating plat
 
 To build successful Platforms on top of Kubernetes you need to: 
 
-- Glue things together: reduce the cognitive load, be ready to pivot. Understand and join the Cloud Native and CNCF ecosystem and projects to understand where the industry is going and what other companies are doing
-- Understand your teams:  and then provide self-service APIs for them to do their work (no more Jira OPS!)
-- A powerful End User Experience: will boost your teams productivity. Make sure that you have tailored experiences for example: Developer Experiences targeting specific tech stacks or Data Scientist workflows.
+- **Glue things together**: reduce the cognitive load, be ready to pivot. Understand and join the Cloud Native and CNCF ecosystem and projects to understand where the industry is going and what other companies are doing
+- **Understand your teams**:  and then provide self-service APIs for them to do their work (no more Jira OPS!)
+- **A powerful End User Experience**: will boost your teams productivity. Make sure that you have tailored experiences for example: Developer Experiences targeting specific tech stacks or Data Scientist workflows.
 
 Before jumping into the sections make sure you follow the [prerequisites and installation section here](prerequisites.md).
-
 
 For the purpose of this tutorial are creating a platform to help development teams and data scientist to work together, by exposing clear interfaces that they can use to provision the resources that they need and then have the tools to do the work. 
 
@@ -23,10 +22,10 @@ In this section will we look at creating our Platform using a set of tools that 
 
 For this we will install the following tools into our Kubernetes Cluster that we will call the Platform Cluster: 
 
-- Crossplane + vcluster
-- ArgoCD
-- Knative Serving
-- Dapr
+- [Crossplane](https://crossplane.io) + [vcluster](https://vcluster.com)
+- [ArgoCD](https://argo-cd.readthedocs.io/en/stable/)
+- [Knative Serving](https://knative.dev)
+- [Dapr](https://dapr.io)
 
 These three very popular tools provide a set of key features that enable us to build more complex platforms on top of Kubernetes. 
 
@@ -182,7 +181,7 @@ In our production environment we will install a Redis instance using helm.
 
 ```
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install my-redis bitnami/redis --set architecture=standalone -n production
+helm install redis bitnami/redis --set architecture=standalone -n production
 ```
 
 
@@ -204,22 +203,59 @@ kubectl apply -f crossplane/composition-mlenv.yaml
 
 Now we can request new ML and Dev Environments by just creating Environment Resources and using labels to define what kind of Environment we want: 
 
+For Devs: 
+```
+kubectl apply -f team-a-dev-env.yaml
+```
+Connect to their own private environment, look it has the app installed and all working: 
+```
+vcluster connect team-a-dev-env --server https://localhost:8443 -- zsh
+```
+
+For Data Scientist:
+
 ```
 kubectl apply -f team-b-ml-env.yaml
 ```
 
-Now you can connect to your environment using the `vcluster` CLI: 
+Now you can connect to your environment using the `vcluster` CLI, check there is Ray installed and ready to be used: 
 
 ```
 vcluster connect team-b-ml-env --server https://localhost:8443 -- zsh
 ```
 
-```
-vcluster connect team-a-dev-env --server https://localhost:8443 -- zsh
-```
-
-
 ## A powerful end user experience
 
+Installing things into the cluster is just the starting point. Most of these environments will need to access external resorources, some of them might need to be provisioned externally. That is where the Crossplane Compositions can be extended to use Cloud Provider specific services, but then how our team can access these resources? 
 
+That is where Dapr comes to help. 
+
+With Dapr you can connect to provisioned infrastructure, no matter where it is and enable  your developers and data scientist to consume those resources by accessing a local HTTP/gRPC API. 
+
+Check: [https://blog.crossplane.io/crossplane-and-dapr/](https://blog.crossplane.io/crossplane-and-dapr/)
+
+Let's take a look at how our app is connecting to the Redis Instance that we are provisioning: 
+
+To get data from the statestore component: 
+
+```
+    daprClient, err := dapr.NewClient()
+	if err != nil {
+		panic(err)
+	}
+
+	result, _ := daprClient.GetState(ctx, STATE_STORE_NAME, "values", nil)
+```
+
+To write data to the statestore: 
+
+```
+    jsonData, err := json.Marshal(myValues)
+
+	err = daprClient.SaveState(ctx, STATE_STORE_NAME, "values", jsonData, nil)
+```
+
+You can use your favouriate language and use the Dapr SDKs, or you can do plain HTTP / gRPC calls to a local endpoint. 
+
+This gives you the ultimate freedom, as your apps doesn't need to know where the Redis Instance is, or even if it is a Redis instance.. as no Redis dependency is needed in your app. :metal: :tada:
 
