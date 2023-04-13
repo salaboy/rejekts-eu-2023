@@ -159,7 +159,7 @@ spec:
             values:
               inVcluster: true
               redisHost: redis-master.default.svc.cluster.local
-              redisPassword: CiPV2SU9ZS #get from Redis install: kubectl get secret --namespace default redis -o jsonpath="{.data.redis-password}" | base64 -d
+              redisPassword: WfbWmYFGys #get from Redis install: kubectl get secret --namespace default redis -o jsonpath="{.data.redis-password}" | base64 -d
             namespace: default
           providerConfigRef: 
             name: #patched

@@ -29,7 +29,7 @@ func writeHandler(w http.ResponseWriter, r *http.Request) {
 
 	value := r.URL.Query().Get("message")
 
-	result, _ := daprClient.GetState(ctx, STATE_STORE_NAME, "values", nil)
+	result, _ := read(ctx, "values")
 	myValues := MyValues{}
 	if result.Value != nil {
 		json.Unmarshal(result.Value, &myValues)
@@ -43,12 +43,20 @@ func writeHandler(w http.ResponseWriter, r *http.Request) {
 
 	jsonData, err := json.Marshal(myValues)
 
-	err = daprClient.SaveState(ctx, STATE_STORE_NAME, "values", jsonData, nil)
+	err = save(ctx, "values", jsonData)
 	if err != nil {
 		panic(err)
 	}
 
 	respondWithJSON(w, http.StatusOK, myValues)
+}
+
+func save(ctx context, key string, data []byte) error {
+	return daprClient.SaveState(ctx, STATE_STORE_NAME, key, data, nil)
+}
+
+func read(ctx context, key string) ([]byte, error) {
+	return daprClient.GetState(ctx, STATE_STORE_NAME, key, nil)
 }
 
 func readHandler(w http.ResponseWriter, r *http.Request) {
@@ -59,10 +67,7 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	result, err := daprClient.GetState(ctx, STATE_STORE_NAME, "values", nil)
-	if err != nil {
-		panic(err)
-	}
+	result, err := read(ctx, "values")
 	myValues := MyValues{}
 	json.Unmarshal(result.Value, &myValues)
 
