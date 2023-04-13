@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
-	dapr "github.com/dapr/go-sdk/client"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
+
+	dapr "github.com/dapr/go-sdk/client"
+	"github.com/gorilla/mux"
 )
 
 var (
@@ -21,57 +22,57 @@ type MyValues struct {
 
 func writeHandler(w http.ResponseWriter, r *http.Request) {
 
+	value := r.URL.Query().Get("message")
+
+	values, _ := read("values")
+
+	if values.Values == nil || len(values.Values) == 0 {
+		values.Values = []string{value}
+	} else {
+		values.Values = append(values.Values, value)
+	}
+
+	jsonData, err := json.Marshal(values)
+
+	err = save("values", jsonData)
+	if err != nil {
+		panic(err)
+	}
+
+	respondWithJSON(w, http.StatusOK, values)
+}
+
+func save(key string, data []byte) error {
 	ctx := context.Background()
 	daprClient, err := dapr.NewClient()
 	if err != nil {
 		panic(err)
 	}
+	return daprClient.SaveState(ctx, STATE_STORE_NAME, key, data, nil)
+}
 
-	value := r.URL.Query().Get("message")
-
-	result, _ := read(ctx, "values")
+func read(key string) (MyValues, error) {
+	ctx := context.Background()
+	daprClient, err := dapr.NewClient()
+	if err != nil {
+		return MyValues{}, err
+	}
+	result, err := daprClient.GetState(ctx, STATE_STORE_NAME, key, nil)
+	if err != nil {
+		return MyValues{}, err
+	}
 	myValues := MyValues{}
 	if result.Value != nil {
 		json.Unmarshal(result.Value, &myValues)
 	}
-
-	if myValues.Values == nil || len(myValues.Values) == 0 {
-		myValues.Values = []string{value}
-	} else {
-		myValues.Values = append(myValues.Values, value)
-	}
-
-	jsonData, err := json.Marshal(myValues)
-
-	err = save(ctx, "values", jsonData)
-	if err != nil {
-		panic(err)
-	}
-
-	respondWithJSON(w, http.StatusOK, myValues)
-}
-
-func save(ctx context, key string, data []byte) error {
-	return daprClient.SaveState(ctx, STATE_STORE_NAME, key, data, nil)
-}
-
-func read(ctx context, key string) ([]byte, error) {
-	return daprClient.GetState(ctx, STATE_STORE_NAME, key, nil)
+	return myValues, nil
 }
 
 func readHandler(w http.ResponseWriter, r *http.Request) {
 
-	ctx := context.Background()
-	daprClient, err := dapr.NewClient()
-	if err != nil {
-		panic(err)
-	}
+	values, _ := read("values")
 
-	result, err := read(ctx, "values")
-	myValues := MyValues{}
-	json.Unmarshal(result.Value, &myValues)
-
-	respondWithJSON(w, http.StatusOK, myValues)
+	respondWithJSON(w, http.StatusOK, values)
 
 }
 

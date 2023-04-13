@@ -6,9 +6,9 @@ On this short tutorial we will be looking at three main aspects of creating plat
 
 To build successful Platforms on top of Kubernetes you need to: 
 
-- **Glue things together**: reduce the cognitive load, be ready to pivot. Understand and join the Cloud Native and CNCF ecosystem and projects to understand where the industry is going and what other companies are doing
-- **Understand your teams**:  and then provide self-service APIs for them to do their work (no more Jira OPS!)
-- **A powerful End User Experience**: will boost your teams productivity. Make sure that you have tailored experiences for example: Developer Experiences targeting specific tech stacks or Data Scientist workflows.
+- [**Glue things together**](#glue-things-together): reduce the cognitive load, be ready to pivot. Understand and join the Cloud Native and CNCF ecosystem and projects to understand where the industry is going and what other companies are doing
+- [**Understand your teams**](#understand-your-teams):  and then provide self-service APIs for them to do their work (no more Jira OPS!)
+- [**A powerful End User Experience**](#a-powerful-end-user-experience): will boost your teams productivity. Make sure that you have tailored experiences for example: Developer Experiences targeting specific tech stacks or Data Scientist workflows.
 
 Before jumping into the sections make sure you follow the [prerequisites and installation section here](prerequisites.md).
 
@@ -25,6 +25,8 @@ For this we will install the following tools into our Kubernetes Cluster that we
 - [Crossplane](https://crossplane.io) + [vcluster](https://vcluster.com)
 - [ArgoCD](https://argo-cd.readthedocs.io/en/stable/)
 - [Knative Serving](https://knative.dev)
+- [Ray](https://www.ray.io/)
+- [Kserve](https://kserve.github.io/website)
 - [Dapr](https://dapr.io)
 
 These three very popular tools provide a set of key features that enable us to build more complex platforms on top of Kubernetes. 
@@ -202,7 +204,15 @@ Finally, configure the production environment by running:
 kubectl apply -f argocd/production-env.yaml -n argocd
 ```
 
+Now it is time to install all the ML tools: 
 
+```
+helm repo add kuberay https://ray-project.github.io/kuberay-helm/
+helm repo update
+helm install kuberay-operator kuberay/kuberay-operator --version 0.4.0
+```
+
+![Tools](imgs/rejekts-tools.png)
 
 ## Understand your teams
 
