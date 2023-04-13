@@ -16,4 +16,4 @@ Port forward ray head service:
 Access Ray dashboard: `http://localhost:8265`
 
 Submit a test job:
-`ray job submit --address http://localhost:8265 -- python -c "import ray; ray.init(); print(ray.cluster_resources())"`
+`ray job submit --address http://localhost:8265 --working-dir ${PWD}/script -- python script.py`
