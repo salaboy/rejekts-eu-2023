@@ -71,7 +71,6 @@ func read(key string) (MyValues, error) {
 func readHandler(w http.ResponseWriter, r *http.Request) {
 
 	values, _ := read("values")
-
 	respondWithJSON(w, http.StatusOK, values)
 
 }

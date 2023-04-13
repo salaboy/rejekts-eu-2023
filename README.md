@@ -238,6 +238,20 @@ For Devs:
 ```
 kubectl apply -f team-a-dev-env.yaml
 ```
+Where the `team-a-dev-env.yaml` content looks like this:
+```
+apiVersion: salaboy.com/v1alpha1
+kind: Environment
+metadata:
+  name: team-a-dev-env
+spec:
+  compositionSelector:
+    matchLabels:
+      type: development
+  parameters: 
+    database: true
+```
+
 Connect to their own private environment, look it has the app installed and all working: 
 ```
 vcluster connect team-a-dev-env --server https://localhost:8443 -- zsh
@@ -247,6 +261,20 @@ For Data Scientist:
 
 ```
 kubectl apply -f team-b-ml-env.yaml
+```
+
+Where the `team-b-ml-env.yaml` content looks like this:
+```
+apiVersion: salaboy.com/v1alpha1
+kind: Environment
+metadata:
+  name: team-b-ml-env
+spec:
+  compositionSelector:
+    matchLabels:
+      type: ml
+  parameters: 
+    database: true
 ```
 
 Now you can connect to your environment using the `vcluster` CLI, check there is Ray installed and ready to be used: 
@@ -259,32 +287,57 @@ vcluster connect team-b-ml-env --server https://localhost:8443 -- zsh
 
 Installing things into the cluster is just the starting point. Most of these environments will need to access external resorources, some of them might need to be provisioned externally. That is where the Crossplane Compositions can be extended to use Cloud Provider specific services, but then how our team can access these resources? 
 
-That is where Dapr comes to help. 
+That is where [Dapr](https://dapr.io) comes to help. 
 
 With Dapr you can connect to provisioned infrastructure, no matter where it is and enable  your developers and data scientist to consume those resources by accessing a local HTTP/gRPC API. 
 
 Check: [https://blog.crossplane.io/crossplane-and-dapr/](https://blog.crossplane.io/crossplane-and-dapr/)
 
-Let's take a look at how our app is connecting to the Redis Instance that we are provisioning: 
-
-To get data from the statestore component: 
+Let's take a look at how our app is [reading](https://github.com/salaboy/rejekts-eu-2023/blob/main/rejekts-app/rejekts-app.go#L71) and [writing](https://github.com/salaboy/rejekts-eu-2023/blob/main/rejekts-app/rejekts-app.go#L23) to the Redis Instance that we are provisioning: 
 
 ```
-    daprClient, err := dapr.NewClient()
+func writeHandler(w http.ResponseWriter, r *http.Request) {
+
+	value := r.URL.Query().Get("message")
+
+	values, _ := read("values")
+
+	if values.Values == nil || len(values.Values) == 0 {
+		values.Values = []string{value}
+	} else {
+		values.Values = append(values.Values, value)
+	}
+
+	jsonData, err := json.Marshal(values)
+
+	err = save("values", jsonData)
 	if err != nil {
 		panic(err)
 	}
 
+	respondWithJSON(w, http.StatusOK, values)
+}
+```
+
+In this code, the platform is providing the `read` and `save` functions in Go. Under the hood, the Platform can use Dapr to simplify the integration with infrastructure components:
+
+The `read` function would look like: 
+```
+  daprClient, err := dapr.NewClient()
+	if err != nil {
+		panic(err)
+	}
 	result, _ := daprClient.GetState(ctx, STATE_STORE_NAME, "values", nil)
 ```
 
-To write data to the statestore: 
+The `write` function like this: 
 
 ```
-    jsonData, err := json.Marshal(myValues)
-
+  jsonData, err := json.Marshal(myValues)
 	err = daprClient.SaveState(ctx, STATE_STORE_NAME, "values", jsonData, nil)
 ```
+
+
 
 You can use your favouriate language and use the Dapr SDKs, or you can do plain HTTP / gRPC calls to a local endpoint. 
 
