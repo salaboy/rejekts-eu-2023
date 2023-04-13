@@ -1,12 +1,12 @@
 # Submit Ray Jobs
 
-Install python: `brew install python`
-Add python to zshrc: `echo "alias python=/usr/bin/python3" >> ~/.zshrc`
-Set up virtual environment: `python -m venv venv`
-Active virtual environment: `source venv/bin/activate`
-Install ray: `pip install -U "ray[default]"`
+- Install python: `brew install python` 
+- Add python to zshrc: `echo "alias python=/usr/bin/python3" >> ~/.zshrc` 
+- Set up virtual environment: `python -m venv venv` 
+- Active virtual environment: `source venv/bin/activate` 
+- Install ray: `pip install -U "ray[default]"` 
 
-Test if ray is installed: `ray --version`
+Test if ray is installed: `ray --version` 
 
 ## Submit Ray Job
 
